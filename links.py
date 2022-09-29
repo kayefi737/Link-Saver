@@ -3,14 +3,10 @@ from fastapi import FastAPI, Depends
 from proj.access import model
 from dotenv import load_dotenv, find_dotenv
 from proj.access.database import engine,get_db
-from router import posts, users, auth
-from pydantic import BaseSettings
+from router import posts, users, auth, votes
+
 
 load_dotenv(find_dotenv(".env")) 
-
-class Settings(BaseSettings):
-    DATABASE_PASSWORD: str = "localhost"
-    DATABASE_USERNAME: str = "postgres"
 
 
 
@@ -22,7 +18,8 @@ app = FastAPI()
 
 app.include_router(posts.router)
 app.include_router(users.router)
-app.include_router(auth.router) 
+app.include_router(auth.router)
+app.include_router(votes.router) 
 
 
 @app.get("/")

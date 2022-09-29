@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, Column,Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from proj.access.database import Base
 
+
 class Link(Base):
     __tablename__ = "links"
     id = Column(Integer, primary_key=True, index=True, nullable=False)
@@ -22,6 +23,15 @@ class User(Base):
     is_active = Column(Boolean, server_default="False")    
     created_at = Column(DateTime(timezone=True), server_default='now()', nullable=False) 
 
+
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    user_id = Column(Integer, ForeignKey(
+        "users.id",ondelete="CASCADE"), primary_key=True)
+    post_id = Column(Integer, ForeignKey(
+        "links.id",ondelete="CASCADE"), primary_key=True) 
 
 
   
