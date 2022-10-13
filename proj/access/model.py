@@ -22,6 +22,7 @@ class User(Base):
     password = Column(String, nullable='False')
     is_active = Column(Boolean, server_default="False")    
     created_at = Column(DateTime(timezone=True), server_default='now()', nullable=False) 
+    phone_number= Column(String)
 
 
 

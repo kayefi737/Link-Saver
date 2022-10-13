@@ -23,6 +23,11 @@ def get_posts(
     #Links = cur.fetchall()
     #conn.commit()
     #post = db.query(model.Link).filter(model.Link.owner_id == current_user.id).all()
+    '''@router.get("/join")
+    def join(db:Session = Depends(get_db)):
+    posts = db.query(model.Link).filter(model.Link.title.contains(search)).limit(limit).offset(skip).all()
+    result = db.query(model.Link).join(model.Vote, model.Vote.post_id == model.Link.id, isouter=True)
+    print(result)'''
     print(current_user)
     post = db.query(model.Link).join(model.Link.owner).filter(
             model.Link.title.contains(search)
