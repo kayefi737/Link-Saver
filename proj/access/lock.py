@@ -8,7 +8,6 @@ import os
 
 
 outh2_scheme = OAuth2PasswordBearer(tokenUrl= "token")
-userDetail ={'username':'olly', 'password':'playrank247'}
 
 
 def create_token(data: dict, duration_in_hrs: Union[float, int]) -> str:
@@ -16,7 +15,7 @@ def create_token(data: dict, duration_in_hrs: Union[float, int]) -> str:
     data["exp"] = expire
     print(os.getenv("ALG"))
     encoded_jwt = jwt.encode(data, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALG"))
-    return encoded_jwt 
+    return encoded_jwt
 
 
 async def get_user_from_token(token: str = Depends(outh2_scheme)) -> dict:
@@ -32,5 +31,5 @@ async def get_user_from_token(token: str = Depends(outh2_scheme)) -> dict:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     return payload
