@@ -15,15 +15,21 @@ router = APIRouter(
 def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(model.User).filter(
         model.User.email == user_credentials.username).first()
-        
-    if not user: 
+
+    if not user:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
         detail= f"Invalid Credentials")
 
     if not utils.verify(user_credentials.password, user.password):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-        detail= f"Invalid Credentials")    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+        detail= f"Invalid Credentials")
+
+    # Keep the admin allowlist in sync: if this email was added to ADMIN_EMAILS
+    # after the account was created, promote it to admin on login.
+    if utils.role_for_email(user.email) == "admin" and user.role != "admin":
+        user.role = "admin"
+        db.commit()
 
     access_token = oauth2.create_access_token(data={"user_id": user.id})
 
-    return{"access_token": access_token,"token_type":"bearer"} 
+    return{"access_token": access_token,"token_type":"bearer"}

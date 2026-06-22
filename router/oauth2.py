@@ -25,20 +25,20 @@ def create_access_token(data:dict):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode,os.getenv("SECRET_KEY"),algorithm=os.getenv("ALG"))
 
-    return encoded_jwt 
+    return encoded_jwt
 
 
 
 def verify_access_token(token:str, credentials_exception)-> str:
     try:
-        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=os.getenv("ALG"))  
-        id: str = payload.get("user_id")  
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=os.getenv("ALG"))
+        id: str = payload.get("user_id")
 
         if id is None:
             raise credentials_exception
-        token_data = TokenData(id=id) 
+        token_data = TokenData(id=id)
     except JWTError:
-        raise credentials_exception 
+        raise credentials_exception
 
     return token_data
 
@@ -48,12 +48,35 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
          status_code=status.HTTP_401_UNAUTHORIZED,
          detail=f"Could not validate credentials",
          headers={"WWW-Authenticate": "Bearer"},
-    ) 
+    )
     token = verify_access_token(token, credentials_exception)
     user = db.query(model.User).filter(model.User.id == token.id).first()
-    print(user)
-    
-    return user           
+    if user is None:
+        raise credentials_exception
 
-           
+    return user
 
+
+def require_role(*allowed_roles: str):
+    """Dependency factory: only allow users whose role is in allowed_roles.
+
+    Usage:  current_user = Depends(require_role("admin"))
+    """
+    def _checker(current_user = Depends(get_current_user)):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action",
+            )
+        return current_user
+    return _checker
+
+
+def require_admin(current_user = Depends(get_current_user)):
+    """Dependency: only allow users with the 'admin' role."""
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+    return current_user
